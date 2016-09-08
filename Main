@@ -1,4 +1,86 @@
 
+// ******* Possible Hardware I/O connections*******************
+// Slide pot pin 1 connected to ground
+// Slide pot pin 2 connected to PE2/AIN1
+// Slide pot pin 3 connected to +3.3V 
+// fire button connected to PE0
+// special weapon fire button connected to PE1
+// 8*R resistor DAC bit 0 on PB0 (least significant bit)
+// 4*R resistor DAC bit 1 on PB1
+// 2*R resistor DAC bit 2 on PB2
+// 1*R resistor DAC bit 3 on PB3 (most significant bit)
+// LED on PB4
+// LED on PB5
+
+// Backlight (pin 10) connected to +3.3 V
+// MISO (pin 9) unconnected
+// SCK (pin 8) connected to PA2 (SSI0Clk)
+// MOSI (pin 7) connected to PA5 (SSI0Tx)
+// TFT_CS (pin 6) connected to PA3 (SSI0Fss)
+// CARD_CS (pin 5) unconnected
+// Data/Command (pin 4) connected to PA6 (GPIO), high for data, low for command
+// RESET (pin 3) connected to PA7 (GPIO)
+// VCC (pin 2) connected to +3.3 V
+// Gnd (pin 1) connected to ground
+
+#include <stdint.h>
+#include "tm4c123gh6pm.h"
+#include "ST7735.h"
+#include "Random.h"
+#include "TExaS.h"
+#include "ADC.h"
+#include "Collision_Detect.h"
+#include "Timer0.h"
+#include "Timer1.h"
+
+#define UP											(*((volatile uint32_t *)0x40024004)) // PE-0
+#define DOWN										(*((volatile uint32_t *)0x40024008)) // PE-1
+#define LEFT										(*((volatile uint32_t *)0x40024010)) // PE-2		
+#define RIGHT										(*((volatile uint32_t *)0x40024020)) // PE-3	
+#define SHOOT										(*((volatile uint32_t *)0x40024040)) // PE-4
+#define E												(*((volatile uint32_t *)0x40024080)) // PE-5
+#define SLIDE										(*((volatile uint32_t *)0x40007004)) // PD-0
+#define RESET 									(*((volatile uint32_t *)0x40024100)) // PE-6
+#define PAUSE										(*((volatile uint32_t *)0x40024200)) // PE-7
+
+
+
+int marinehealth = 60;
+int monster1health = 0;
+int monster2health = 0;
+int monster3health = 0;
+int m1 = 0;   						// 1 = small --  2 = medium --  3 = big
+int m2 = 0;
+int m3 = 0;
+int marineDir = 1;
+int monster1Dir = 0;
+int monster2Dir = 0;
+int monster3Dir = 0;
+int monster1y = 0;
+int monster1x = 0;
+int monster2y = 0;
+int monster2x = 0;
+int monster3y = 0;
+int monster3x = 0;
+int marinex = 58;
+int mariney = 72;
+int rocknum = 1;
+int rock1y = 0;
+int rock2y = 0;
+int rock3y = 0;
+int rock4y = 0;
+int rock1x = 0;
+int rock2x = 0;
+int rock3x = 0;
+int rock4x = 0;
+int gap1 = 0;
+int gap2 = 0;
+int gap3 = 0;
+
+void DisableInterrupts(void); // Disable interrupts
+void EnableInterrupts(void);  // Enable interrupts
+void Delay100ms(uint32_t count); // time delay in 0.1 seconds
+
 void GameOver (void){
 	
 	DisableInterrupts();
